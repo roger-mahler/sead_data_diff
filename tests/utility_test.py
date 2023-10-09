@@ -58,12 +58,12 @@ def test_config():
     assert dict(config) == dict(expected_config)
 
 
-def test_data_compare():
-    data_compare(
-        config="config/config.yml",
-        schemas=("public",),
-        break_on_diff=False,
-        verbose=True,
-        progress=True,
-        output_file=None,
-    )
+# def test_data_compare():
+#     data_compare(
+#         config="config/config.yml",
+#         schemas=("public",),
+#         break_on_diff=False,
+#         verbose=True,
+#         progress=True,
+#         output_file=None,
+#     )

@@ -75,7 +75,7 @@ class Config(dict):
 
         for key, value in os.environ.items():
             if key.lower().startswith(prefix.lower()):
-                dotpath: str = key[len(prefix) :].lower().replace("_", ".")
+                dotpath: str = key[len(prefix) :].lower().replace("_", ".").replace(":", ".")
                 dotset(self, dotpath, value)
 
         return self
