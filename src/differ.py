@@ -320,7 +320,7 @@ def main(
             click.echo("error: config or source-uri and target-uri must be specified", err=True)
             sys.exit(1)
 
-        config = Config(dict(source=db_urlparse(source_uri), target=db_urlparse(target_uri))).load_environment(
+        config = Config({"source": db_urlparse(source_uri), "target": db_urlparse(target_uri)}).load_environment(
             "DIFFER_"
         )
 
