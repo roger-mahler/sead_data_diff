@@ -2,7 +2,7 @@
 name = "sead-data-diff"
 version = "0.1.1"
 description = ""
-authors = ["Roger Mähler <roger dot mahler at hotmail dot com>"]
+authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 readme = "README.md"
 packages = [{include = "src"}]
 
