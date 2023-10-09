@@ -2,6 +2,7 @@ import sys
 from dataclasses import dataclass
 from functools import cached_property
 from logging import ERROR, INFO, WARNING
+from urllib.parse import urlparse
 
 import click
 import data_diff
@@ -10,7 +11,6 @@ from data_diff.sqeleton.databases import postgresql
 from loguru import logger
 from psycopg2 import sql
 from tqdm import tqdm
-from urllib.parse import urlparse
 
 from src.config import Config
 
@@ -30,11 +30,7 @@ class DbTableInfo:
 
     @cached_property
     def value_columns(self) -> tuple[str]:
-        return (
-            self.columns
-            if self.timestamp is None
-            else tuple(x for x in self.columns if x != self.timestamp)
-        )
+        return self.columns if self.timestamp is None else tuple(x for x in self.columns if x != self.timestamp)
 
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, DbTableInfo):
@@ -108,11 +104,7 @@ class DatabaseProxy:
         """Find all columns in the database"""
         with self.database.create_connection() as con:
             with con.cursor() as cursor:
-                cursor.execute(
-                    sql.SQL("select count(*) from {}").format(
-                        sql.Identifier(schema, table_name)
-                    )
-                )
+                cursor.execute(sql.SQL("select count(*) from {}").format(sql.Identifier(schema, table_name)))
                 return cursor.fetchone()[0]
 
     @cached_property
@@ -183,10 +175,7 @@ def data_compare(
             log_diff(schema_name, INFO, "not in schemas (skipping)", verbose)
             continue
 
-        if any(
-            table_name not in source.schemas[schema_name]
-            for table_name in target.schemas[schema_name]
-        ):
+        if any(table_name not in source.schemas[schema_name] for table_name in target.schemas[schema_name]):
             is_same = False
             log_diff(schema_name, ERROR, "target has more tables than source", verbose)
 
@@ -205,9 +194,7 @@ def data_compare(
                 return tqdm(iterable, **kwargs) if progress else iterable
             return iterable
 
-        for table_name, source_table in (
-            pbar := progress_bar(tables.items(), total=len(tables))
-        ):
+        for table_name, source_table in (pbar := progress_bar(tables.items(), total=len(tables))):
             pbar.set_description(f"{schema_name}.{table_name}")
 
             if not source_table.primary_keys:
@@ -286,9 +273,7 @@ def data_compare(
                 if break_on_diff:
                     return False
             else:
-                log_diff(
-                    f"{schema_name}.{table_name}", INFO, "data is the same", verbose
-                )
+                log_diff(f"{schema_name}.{table_name}", INFO, "data is the same", verbose)
 
     return is_same
 
@@ -318,9 +303,7 @@ def db_urlparse(uri: str) -> dict:
     is_flag=True,
     help="break on diff",
 )
-@click.option(
-    "--progress/--no-progress", "-p", default=True, is_flag=True, help="break on diff"
-)
+@click.option("--progress/--no-progress", "-p", default=True, is_flag=True, help="break on diff")
 @click.option("--output-file", "-o", default=None, type=str, help="store diff in file")
 def main(
     config: str,
@@ -334,12 +317,12 @@ def main(
 ):
     if config is None:
         if source_uri is None or target_uri is None:
-            click.echo(
-                "error: config or source-uri and target-uri must be specified", err=True
-            )
+            click.echo("error: config or source-uri and target-uri must be specified", err=True)
             sys.exit(1)
 
-        config = Config(dict(source=db_urlparse(source_uri), target=db_urlparse(target_uri))).load_environment("DIFFER_")
+        config = Config(dict(source=db_urlparse(source_uri), target=db_urlparse(target_uri))).load_environment(
+            "DIFFER_"
+        )
 
     is_same: bool = data_compare(
         config=config,
