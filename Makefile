@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 
 SOURCE_FOLDERS=src tests
-PYTEST_ARGS=--no-cov --durations=0 tests
+PYTEST_ARGS=--durations=0 tests
 RUN_TIMESTAMP := $(shell /bin/date "+%Y-%m-%d-%H%M%S")
 
 release: ready guard-clean-working-repository bump.patch tag publish
