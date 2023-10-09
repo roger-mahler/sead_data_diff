@@ -1,0 +1,8 @@
+source:
+  username: humlab_admin
+  database: sead_staging
+
+target:
+  username: humlab_admin
+  database: sead_production
+
