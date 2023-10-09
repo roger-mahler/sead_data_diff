@@ -339,9 +339,9 @@ def main(
             )
             sys.exit(1)
 
-        config = Config(source=db_urlparse(source_uri), target=db_urlparse(target_uri))
+        config = Config(dict(source=db_urlparse(source_uri), target=db_urlparse(target_uri))).load_environment("DIFFER_")
 
-    is_same = data_compare(
+    is_same: bool = data_compare(
         config=config,
         schemas=schema,
         verbose=verbose,
