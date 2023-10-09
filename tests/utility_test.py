@@ -1,13 +1,9 @@
 import os
 
-import data_diff
-import psycopg2 as pg
 import yaml
-from data_diff.sqeleton.databases import postgresql as dfpg
 
 from src.config import Config
 from src.utility import dotset
-from src.differ import DatabaseProxy, data_compare
 
 
 def test_dotset():

@@ -1,5 +1,6 @@
 from typing import Any
 
+
 def dget(data: dict, *path: str | list[str], default: Any = None) -> Any:
     if path is None or not data:
         return default
@@ -15,6 +16,7 @@ def dget(data: dict, *path: str | list[str], default: Any = None) -> Any:
             return d
 
     return d or default
+
 
 def dotexists(data: dict, *paths: list[str]) -> bool:
     for path in paths:
@@ -49,6 +51,7 @@ def dotget(data: dict, path: str, default: Any = None) -> Any:
         if d is not None:
             return d
     return default
+
 
 def dotset(data: dict, path: str, value: Any) -> dict:
     """Sets element in dict. Path can be x.y.y or x_y_y."""

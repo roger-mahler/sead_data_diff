@@ -1,21 +1,19 @@
 import io
-from inspect import isclass
 import os
+from inspect import isclass
 from pathlib import Path
 from typing import Any, Type
 
 import dotenv
 import yaml
 
-dotenv.load_dotenv()
+from .utility import dget, dotexists, dotset
 
-from .utility import dget, dotset, dotexists
+dotenv.load_dotenv()
 
 
 class Config(dict):
-    class SafeLoaderIgnoreUnknown(
-        yaml.SafeLoader
-    ):  # pylint: disable=too-many-ancestors
+    class SafeLoaderIgnoreUnknown(yaml.SafeLoader):  # pylint: disable=too-many-ancestors
         def let_unknown_through(self, node):  # pylint: disable=unused-argument
             return None
 
@@ -25,13 +23,11 @@ class Config(dict):
 
         super().__init__(__map or {})
 
-    def get(
-        self, *keys: str, default: Any | Type[Any] = None, mandatory: bool = False
-    ) -> Any:
+    def get(self, *keys: str, default: Any | Type[Any] = None, mandatory: bool = False) -> Any:
         if mandatory and not self.exists(*keys):
             raise ValueError(f"Missing mandatory key: {keys}")
 
-        value: Any = dget(self.data, *keys)
+        value: Any = dget(self, *keys)
 
         if value is not None:
             return value
@@ -39,7 +35,7 @@ class Config(dict):
         return default() if isclass(default) else default
 
     def exists(self, *keys) -> bool:
-        return dotexists(self.data, *keys)
+        return dotexists(self, *keys)
 
     @staticmethod
     def load(source: str | dict, *, env_prefix: str = None) -> "Config":
@@ -53,9 +49,7 @@ class Config(dict):
                     Loader=Config.SafeLoaderIgnoreUnknown,
                 )
                 if Config.is_config_path(source)
-                else yaml.load(
-                    io.StringIO(source), Loader=Config.SafeLoaderIgnoreUnknown
-                )
+                else yaml.load(io.StringIO(source), Loader=Config.SafeLoaderIgnoreUnknown)
             )
             if isinstance(source, str)
             else source
@@ -63,9 +57,7 @@ class Config(dict):
         if not isinstance(data, dict):
             raise TypeError(f"expected dict, found {type(data)}")
 
-        return Config(
-            data, filename=source if Config.is_config_path(source) else None
-        ).load_environment(env_prefix)
+        return Config(data, filename=source if Config.is_config_path(source) else None).load_environment(env_prefix)
 
     def load_environment(self, prefix: str = None) -> "Config":
         if not (prefix or "").strip():
@@ -85,10 +77,6 @@ class Config(dict):
         try:
             if not isinstance(source, str):
                 return False
-            return (
-                source.endswith(".yaml")
-                or source.endswith(".yml")
-                or os.path.isfile(source)
-            )
+            return source.endswith(".yaml") or source.endswith(".yml") or os.path.isfile(source)
         except (TypeError, ValueError):
             return False

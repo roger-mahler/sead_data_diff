@@ -1,18 +1,17 @@
+import sys
 from dataclasses import dataclass
 from functools import cached_property
-import sys
-import click
+from logging import ERROR, INFO, WARNING
 
+import click
 import data_diff
 import dotenv
-from tqdm import tqdm
-
 from data_diff.sqeleton.databases import postgresql
 from loguru import logger
 from psycopg2 import sql
-from src.config import Config
+from tqdm import tqdm
 
-from logging import INFO, WARNING, ERROR
+from src.config import Config
 
 dotenv.load_dotenv()
 
@@ -30,11 +29,7 @@ class DbTableInfo:
 
     @cached_property
     def value_columns(self) -> tuple[str]:
-        return (
-            self.columns
-            if self.timestamp is None
-            else tuple(x for x in self.columns if x != self.timestamp)
-        )
+        return self.columns if self.timestamp is None else tuple(x for x in self.columns if x != self.timestamp)
 
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, DbTableInfo):
@@ -108,11 +103,7 @@ class DatabaseProxy:
         """Find all columns in the database"""
         with self.database.create_connection() as con:
             with con.cursor() as cursor:
-                cursor.execute(
-                    sql.SQL("select count(*) from {}").format(
-                        sql.Identifier(schema, table_name)
-                    )
-                )
+                cursor.execute(sql.SQL("select count(*) from {}").format(sql.Identifier(schema, table_name)))
                 return cursor.fetchone()[0]
 
     @cached_property
@@ -148,9 +139,9 @@ class DatabaseProxy:
         )
 
 
-def log_diff(object: str, level: int, msg: str, verbose: bool):
+def log_diff(obj: str, level: int, msg: str, verbose: bool):
     if verbose:
-        logger.log(level, f"{object} {msg}")
+        logger.log(level, f"{obj} {msg}")
 
 
 def data_compare(
@@ -183,10 +174,7 @@ def data_compare(
             log_diff(schema_name, INFO, "not in schemas (skipping)", verbose)
             continue
 
-        if any(
-            table_name not in source.schemas[schema_name]
-            for table_name in target.schemas[schema_name]
-        ):
+        if any(table_name not in source.schemas[schema_name] for table_name in target.schemas[schema_name]):
             is_same = False
             log_diff(schema_name, ERROR, "target has more tables than source", verbose)
 
@@ -205,9 +193,7 @@ def data_compare(
                 return tqdm(iterable, **kwargs) if progress else iterable
             return iterable
 
-        for table_name, source_table in (
-            pbar := progress_bar(tables.items(), total=len(tables))
-        ):
+        for table_name, source_table in (pbar := progress_bar(tables.items(), total=len(tables))):
             pbar.set_description(f"{schema_name}.{table_name}")
 
             if not source_table.primary_keys:
@@ -274,10 +260,10 @@ def data_compare(
 
                 if output_file:
                     """Append diff to file"""
-                    
+
                     with open(output_file, "a", encoding="utf-8") as fp:
                         fp.write(
-                            data_diff.format_diff(
+                            data_diff.format_diff(  # pylint: disable=no-member
                                 compare_result,
                                 key_columns=source_table.primary_keys,
                                 extra_columns=source_table.columns,
@@ -302,9 +288,7 @@ def data_compare(
     is_flag=True,
     help="break on diff",
 )
-@click.option(
-    "--progress/--no-progress", "-p", default=True, is_flag=True, help="break on diff"
-)
+@click.option("--progress/--no-progress", "-p", default=True, is_flag=True, help="break on diff")
 @click.option("--output-file", "-o", default=None, type=str, help="store diff in file")
 def main(
     config: str,
@@ -332,4 +316,4 @@ if __name__ == "__main__":
     for key in ["table_segment", "diff_tables", "hashdiff_tables", "joindiff_tables"]:
         logging.getLogger(key).setLevel(logging.ERROR)
 
-    main()
+    main()  # pylint: disable=no-value-for-parameter
