@@ -16,7 +16,7 @@ click = "^8.1.7"
 tqdm = "^4.66.1"
 
 [tool.poetry.scripts]
-sead-differ = "sead_data_diff.src.differ:main"
+sead-differ = "src.differ:main"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
